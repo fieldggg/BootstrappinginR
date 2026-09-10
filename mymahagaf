@@ -1,0 +1,154 @@
+mymaha = function (X, mu, sighat){
+  n = dim(X)[1]
+  d = dim(X)[2]
+  
+  dm = c()
+  
+  siginv = solve(sighat) #inverse of cov matrix
+  for(k in 1:n){
+    myx = X[k,]#all columns
+    dm = c(dm, sqrt(t(myx-mu)%*%siginv%*%(myx-mu)))
+  }
+  return(dm)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+#Loading my dataset
+mydata <- read.csv("Patient_Vitamin_Profile_9_24.csv")
+#creating vectors for each of the 8 variables
+X1 = mydata$Retinol_mcg
+X2 = mydata$Thiamin_mg
+X3 = mydata$Riboflavin_mg
+X4 = mydata$Niacin_mg
+X5 = mydata$Pantothenic_Acid_mg
+X6 = mydata$Pyridoxine_mg
+X7 = mydata$Cobalamin_mcg
+X8 = mydata$Ascorbic_Acid_mg
+
+#Q5
+Xx <- cbind(X1,X2,X3,X4,X5,X6,X7,X8)
+options(digits=10)
+sighat = var(Xx)
+sighat
+stdvgx = sqrt(det(sighat))
+stdvgx
+
+dm = mymaha(X, colMeans(X), var(X))
+
+# Load the dataset
+mydata <- read.csv("/mnt/data/Patient_Vitamin_Profile_9_24.csv")
+
+# Means and standard deviations for each vitamin variable
+mean_thiamin <- mean(mydata$Thiamin_mg)
+sd_thiamin <- sd(mydata$Thiamin_mg)
+
+mean_vitC <- mean(mydata$Ascorbic_Acid_mg)
+sd_vitC <- sd(mydata$Ascorbic_Acid_mg)
+
+mean_vitB5 <- mean(mydata$Pantothenic_Acid_mg)
+sd_vitB5 <- sd(mydata$Pantothenic_Acid_mg)
+
+# a) Probability that daily thiamin intake is between 9.4 and 12.1 mg
+z1_thiamin <- (9.4 - mean_thiamin) / sd_thiamin
+z2_thiamin <- (12.1 - mean_thiamin) / sd_thiamin
+p_thiamin <- pnorm(z2_thiamin) - pnorm(z1_thiamin)
+p_thiamin #0.7125
+# b) Probability that daily Vitamin C intake is more than 112 mg
+z_vitC <- (112 - mean_vitC) / sd_vitC
+p_vitC <- 1 - pnorm(z_vitC)
+p_vitC #0.6402
+# c) Probability that daily Vitamin B5 intake is at most 1.14 mg
+z_vitB5 <- (1.14 - mean_vitB5) / sd_vitB5
+p_vitB5 <- pnorm(z_vitB5)
+p_vitB5 #0.0342
+
+
+# Load necessary package
+install.packages("mvtnorm")
+library(mvtnorm)
+
+# Define the mean vector and covariance matrix from the dataset mydata
+mean_vec <- colMeans(mydata[,c("Thiamin_mg", "Niacin_mg", "Ascorbic_Acid_mg")])
+cov_matrix <- cov(mydata[,c("Thiamin_mg", "Niacin_mg", "Ascorbic_Acid_mg")])
+
+# Set the minimum and maximum boundaries for the Type 1 healthy profile
+lower_bounds <- c(10, 14, 118)  # Minimum intake for Vitamins B1, B3, and C
+upper_bounds <- c(13, 15, 124)  # Maximum intake for Vitamins B1, B3, and C
+
+# Calculate the probability that a randomly selected individual has a Type 1 healthy profile
+probability <- pmvnorm(lower = lower_bounds, upper = upper_bounds, mean = mean_vec, sigma = cov_matrix)
+probability
+# Display the result
+cat("The probability of having a Type 1 healthy profile is:", round(probability, 4))
+
+
+
+
+# Calculate Z-scores for each vitamin
+
+# For Vitamin B1 (Thiamin)
+z1_thiamin <- (10 - mean_thiamin) / sd_thiamin
+z2_thiamin <- (13 - mean_thiamin) / sd_thiamin
+p_thiamin <- pnorm(z2_thiamin) - pnorm(z1_thiamin)
+
+# For Vitamin B3 (Niacin)
+mean_niacin <- mean(mydata$Niacin_mg)
+sd_niacin <- sd(mydata$Niacin_mg)
+z1_niacin <- (14 - mean_niacin) / sd_niacin
+z2_niacin <- (15 - mean_niacin) / sd_niacin
+p_niacin <- pnorm(z2_niacin) - pnorm(z1_niacin)
+
+# For Vitamin C (Ascorbic Acid)
+z1_vitC <- (118 - mean_vitC) / sd_vitC
+z2_vitC <- (124 - mean_vitC) / sd_vitC
+p_vitC <- pnorm(z2_vitC) - pnorm(z1_vitC)
+
+# Multiply the probabilities together (assuming independence)
+p_type1_healthy <- p_thiamin * p_niacin * p_vitC
+p_type1_healthy
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Load necessary library
+library(mvtnorm)
+
+# Extract relevant columns for Thiamin (X2), Niacin (X4), and Ascorbic Acid (X8)
+X_b1_b3_c <- Xx[, c("X2", "X4", "X8")]  # Replace with actual column names if different
+
+# Calculate the mean vector and covariance matrix
+mu <- colMeans(X_b1_b3_c)  # Mean vector
+sigma <- cov(X_b1_b3_c)    # Covariance matrix
+
+# Define the lower and upper bounds for a healthy profile (Type 1)
+lower_bounds <- c(10, 14, 118)  # Lower bounds for Thiamin, Niacin, and Ascorbic Acid
+upper_bounds <- c(13, 15, 124)  # Upper bounds for Thiamin, Niacin, and Ascorbic Acid
+
+# Calculate the probability using the multivariate normal distribution
+p_type1_healthy <- pmvnorm(lower = lower_bounds, upper = upper_bounds, mean = mu, sigma = sigma)
+
+# Print the result
+p_type1_healthy
