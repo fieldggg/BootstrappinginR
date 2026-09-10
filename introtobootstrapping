@@ -1,0 +1,32 @@
+#IS19 Bootstrap sampling in R
+
+set.seed(123)
+
+data1 = rnorm(20, mean=3, sd=0.2)
+data2 = rnorm(20, mean=5, sd=0.3)
+
+S = c(data1, data2)
+
+hist(S)
+
+myxbar = c()
+myvar = c()
+
+for(k in 1:10000){
+  sims = sample(S, length(S), replace=T)
+  value1 = mean(sims)
+  value2 = var(sims)
+  
+  myxbar = c(myxbar, value1)
+  myvar = c(myvar, value2)
+}
+
+hist(myxbar, col='lightblue', breaks=250)
+hist(myvar, col='lightpink', breaks=250)
+
+alpha = 0.05
+
+lowerb = quantile(myxbar, alpha/2)
+upperb = quantile(myxbar, 1- alpha/2)
+round(c(lowerb, upperb), 4)
+
