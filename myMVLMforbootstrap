@@ -1,0 +1,264 @@
+mymvlr = function(Xk,Yk, zx= F, ridged = 0){
+  n = nrow(Yk)
+  d = ncol(Yk)
+  p = ncol(Xk)
+  Y = Yk
+  
+  if(zx==T){
+    Xk = scale(Xk)
+  }
+  X = cbind(1, Xk)
+  
+  dx = sqrt(abs(det(t(X)%*%X)))
+  
+  XtXi = solve(t(X)%*%X + ridged^2*diag(p+1))
+  betahat = solve(t(X)%*%X)%*%t(X)%*%Y
+  
+  Yhat = X%*%betahat
+  resid = Y - Yhat
+  
+  if(d==1){
+    SST = var(Y)*(n-1)
+    SSE = sum((resid)^2)
+    SSM = SST - SSE # sum(Yhat-mean(Y))^2
+    
+    MST = SST/(n-1)
+    MSE = SSE/(n-p-1)
+    MSM = SSM/p
+    
+    Fstat = MSM/MSE
+    pval = pf(Fstat, p, n-p-1, lower.tail=F)
+    
+    #variance inflation factors
+    #vif = 1/(1-r^2) r2 is the cor between xj and the other xks
+    #mci= multicolin index =sqrt(vif)
+    
+    vif = diag(solve(R))
+    mci = sqrt(vif) #close to 1 good, bigger than 3 bad
+    
+    #T/F if det =0 vif will be close to inf
+    sresid = resid/(sqrt(sig2)*sqrt(1-lev))
+    
+    sebhat = sqrt(diag(sig2*solve(t(X)%*%X)))
+    
+    r2 = 1- SSE/SST
+    r2adj = 1- MSE/MST
+    
+    #approximating homostodasicity variance sigma squared
+    sig2 = MSE
+    
+    H = X%*%solve(t(X)%*%X)%*%t(X)
+    lev = diag(H)
+    
+    R= cor(Xk)
+  }
+  
+  
+  if(d>1){
+    SST = t(Y)%*%(diag(n)-(1/n)*matrix(1,n,n))%*%Y
+    SSE = t(Y)%*%(diag(n)-H)%*%Y
+    SSM = t(Y)%*%(H-(1/n)*matrix(1,n,n))%*%Y
+    
+    sig2 = SSE/(n-p-1) #variation does not depend on dimension, it depends on data(don't need d)
+    MST = SST/(d*(n-1))
+    MSE = SSE/(d*(n-p-1))
+    MSM = SSM/(d*p)
+    
+    r2 = c(1- sum(diag(SSE))/sum(diag(SST)), 1- det(SSE)/det(SST)) #trace both, det both
+    r2adj = c(1- sum(diag(MSE))/sum(diag(MST)), 1- det(MSE)/det(MST))
+    
+    sebhat = matrix(sqrt(diag(kronecker(sig2,XtXi))), p+1, d)
+    seeps = matrix(sqrt(diag(kronecker(sig2,diag(n)-H))), n, d)
+    
+    sresid = resid/seeps
+    
+    
+    Fstat_pi = sum(diag(solve(SST)%*%SSM))
+    Fstat_Wilks = (n - p - 0.5 * (d + 2)) * log(det(SST) / det(SSE))
+    Wilks_Lambda = det(SSE) / det(SSE + SST - SSE)
+    Fstat_Wilks = (n - p - 0.5 * (d + p + 1)) * log(Wilks_Lambda)
+    Fstat_Modified_Wilks = ((n - p - d + 1) / (d * (p - 1))) * log(Wilks_Lambda)
+    Fstat_Hotelling_Lawley <- sum(diag(solve(SSE)%*%SSM))
+    eigen_values <- eigen(solve(E) %*% H)$values
+    Roy_Largest_Root <- max(eigen_values)
+    Fstat_Roy = (Roy_Largest_Root / (1 + Roy_Largest_Root)) * (n - p - 1) / d
+    Fstat = c(Fstat_pi, Fstat_Wilks, Fstat_Modified_Wilks, Fstat_Hotelling_Lawley, Fstat_Roy)
+    
+    pval_pi = pf(Fstat_pi, d*p, n-g-2, lower.tail=F)
+    pval_Wilks = pf(Fstat_Wilks, d * p, n - p - 0.5 * (d + p + 1), lower.tail = FALSE)
+    pval_Modified_Wilks <- pf(Fstat_Modified_Wilks, d * (p - 1), n - p - d + 1, lower.tail = FALSE)
+    pval_Hotelling_Lawley <- pf(Fstat_Hotelling_Lawley, d * p, n - p - 1, lower.tail = FALSE)
+    pval_Roy <- pf(Fstat_Roy, d, n - p - 1, lower.tail = FALSE)
+    pval = c(pval_pi, pval_Wilks, pval_Modified_Wilks, pval_Hotelling_Lawley, pval_Roy)
+  }
+  results = list('detx'     = dx,
+                 'betahat'  = betahat,
+                 'Fstat'    = Fstat,
+                 'pval'     = pval,
+                 'resid'    = resid,
+                 'r2'       = r2,
+                 'r2adj'    = r2adj,
+                 'sresid'   = sresid,
+                 'sebhat'   = sebhat
+  )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+mymvlr = function(Xk, Yk, zx = FALSE, ridged = 0) {
+  # Input validation
+  if (!is.matrix(Xk) && !is.data.frame(Xk)) stop("Xk must be a matrix or data frame")
+  if (!is.matrix(Yk) && !is.data.frame(Yk)) stop("Yk must be a matrix or data frame")
+  
+  # Convert inputs to matrices
+  Xk = as.matrix(Xk)
+  Yk = as.matrix(Yk)
+  
+  n = nrow(Yk)
+  d = ncol(Yk)
+  p = ncol(Xk)
+  Y = Yk
+  
+  if (zx) {
+    Xk = scale(Xk)
+  }
+  X = cbind(1, Xk)
+  
+  dx = sqrt(abs(det(t(X) %*% X)))
+  
+  # Ridge regression adjustment
+  XtXi = solve(t(X) %*% X + ridged^2 * diag(p + 1))
+  betahat = XtXi %*% t(X) %*% Y  # Corrected betahat calculation
+  
+  Yhat = X %*% betahat
+  resid = Y - Yhat
+  
+  # Hat matrix calculation (moved up as it's used in both univariate and multivariate cases)
+  H = X %*% XtXi %*% t(X)
+  
+  if (d == 1) {
+    SST = var(Y) * (n - 1)
+    SSE = sum(resid^2)
+    SSM = SST - SSE
+    
+    MST = SST/(n - 1)
+    MSE = SSE/(n - p - 1)
+    MSM = SSM/p
+    
+    Fstat = MSM/MSE
+    pval = pf(Fstat, p, n - p - 1, lower.tail = FALSE)
+    
+    # Variance inflation factors
+    if (p > 1) {
+      R = cor(Xk)
+      vif = diag(solve(R))
+      mci = sqrt(vif)
+    } else {
+      vif = 1
+      mci = 1
+    }
+    
+    sig2 = MSE
+    lev = diag(H)
+    
+    # Standardized residuals calculation
+    sresid = resid/(sqrt(sig2) * sqrt(1 - lev))
+    
+    # Standard errors for beta
+    sebhat = sqrt(diag(sig2 * XtXi))
+    
+    r2 = 1 - SSE/SST
+    r2adj = 1 - MSE/MST
+    
+  } else {
+    # Multivariate case
+    SST = t(Y) %*% (diag(n) - (1/n) * matrix(1, n, n)) %*% Y
+    SSE = t(resid) %*% resid  # Simplified SSE calculation
+    SSM = t(Yhat) %*% Yhat - n * t(colMeans(Y)) %*% colMeans(Y)  # Corrected SSM
+    
+    sig2 = SSE/(n - p - 1)
+    MST = SST/(d * (n - 1))
+    MSE = SSE/(d * (n - p - 1))
+    MSM = SSM/(d * p)
+    
+    # R-squared calculations
+    r2 = c(1 - sum(diag(SSE))/sum(diag(SST)), 
+           1 - det(SSE)/det(SST))
+    r2adj = c(1 - sum(diag(MSE))/sum(diag(MST)),
+              1 - det(MSE)/det(MST))
+    
+    # Standard errors
+    sebhat = matrix(sqrt(diag(kronecker(sig2, XtXi))), p + 1, d)
+    seeps = matrix(sqrt(diag(kronecker(sig2, diag(n) - H))), n, d)
+    sresid = resid/seeps
+    
+    # Test statistics
+    E = SSE  # Error matrix
+    H = SSM  # Hypothesis matrix
+    
+    # Pillai's trace
+    Fstat_pi = sum(diag(solve(SST) %*% SSM))
+    
+    # Wilks' lambda
+    Wilks_Lambda = det(E)/det(E + H)
+    Fstat_Wilks = ((n - p - 0.5 * (d + p + 1))/p) * ((1 - sqrt(Wilks_Lambda))/sqrt(Wilks_Lambda))
+    
+    # Hotelling-Lawley trace
+    Fstat_Hotelling = sum(diag(solve(E) %*% H))
+    
+    # Roy's largest root
+    eigen_values = eigen(solve(E) %*% H)$values
+    Roy_Largest_Root = max(eigen_values)
+    Fstat_Roy = Roy_Largest_Root * (n - p - d)/(d)
+    
+    Fstat = c(Fstat_pi, Fstat_Wilks, Fstat_Hotelling, Fstat_Roy)
+    
+    # p-values
+    pval_pi = pf(Fstat_pi, d * p, d * (n - p - 1), lower.tail = FALSE)
+    pval_Wilks = pf(Fstat_Wilks, d * p, n - p - 0.5 * (d + p + 1), lower.tail = FALSE)
+    pval_Hotelling = pf(Fstat_Hotelling, d * p, n - p - 1, lower.tail = FALSE)
+    pval_Roy = pf(Fstat_Roy, d, n - p - d, lower.tail = FALSE)
+    
+    pval = c(pval_pi, pval_Wilks, pval_Hotelling, pval_Roy)
+  }
+  
+  # Return results
+  results = list(
+    detx = dx,
+    betahat = betahat,
+    Fstat = Fstat,
+    pval = pval,
+    resid = resid,
+    r2 = r2,
+    r2adj = r2adj,
+    sresid = sresid,
+    sebhat = sebhat,
+    H = H
+  )
+  
+  return(results)
+}
+
