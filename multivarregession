@@ -1,0 +1,184 @@
+mydata = read.csv("Company_Payroll_8_24.csv")
+options(digits=10)
+
+#multivariate regression function
+#multiple y's
+#correlation b/w Y's
+
+Y1 <- mydata$Efficiency_Factor_Obs
+Y2 <- mydata$Hours_Worked
+
+X1 <- mydata$Age
+X2 <- mydata$Prior_Experience
+X3 <- mydata$Hourly_Wage
+#predicting values of y's w values of x's
+Y = cbind(Y1,Y2)
+X = cbind(X1, X2, X3)
+
+
+#Ridge regression will minimize SSE and L2norm^2 of lambda and betaht
+
+#extract n and 
+###############################################
+
+mymvr = function(Xk, Yk){
+  #extract n and d
+  #numb rows X and Y don't match func won't work
+  n = nrow(Yk)
+  d = ncol(Yk)
+  #numb predictors
+  p = col(Xk)
+  #be able to pull certain features from the code
+  results = list('features'=d)
+  
+  return(results)
+}
+
+M = mymvr(X,Y)
+
+# should be 2
+M$features
+###############################################
+mymvr = function(Xk, Yk){
+  #extract n and d
+  #numb rows X and Y don't match func won't work
+  n = nrow(Yk)
+  d = ncol(Yk)
+  #numb predictors
+  p = ncol(Xk)
+  #be able to pull certain features from the code
+  results = list('features'=d,
+                 'predictors'= p)
+  
+  return(results)
+}
+M = mymvr(X,Y)
+#should be 3
+M$predictors
+###############################################
+
+
+
+mymvr = function(Xk, Yk, zx=F){
+  #extract n and d
+  #numb rows X and Y don't match func won't work
+  n = nrow(Yk)
+  d = ncol(Yk)
+  #numb predictors
+  p = ncol(Xk)
+  #prediction matrix... add col of 1's to Xk
+  X = cbind(1, Xk)
+  Y = Yk
+  #we need to standardize predictors
+  #should be able to tell it to standardize or not ie zx boolean
+  #if you put zk true then
+  if(zx == T){
+    xk = scale(Xk)
+  }
+  #pseudodeterminate of design matrix
+  #helps to keep track of precision(will let us know when it will break for dec)
+  #symetric matrix -- det should always be pos
+  #det close to zero, we can't find inverse(BAD)
+  dx = sqrt(abs(det(t(X)%*%X)))
+  
+  #betahat
+  betahat = solve(t(X)%*%(X))%*%t(X)%*%Y
+  
+  #ridge
+  betahat = solve(t(X)%*%(X))%*%t(X)%*%Y
+  
+  #predictive variables
+  #if beta hat is a vector yhat will be a number
+  Yhat = X%*%betahat
+  #resids
+  resid = Y- Yhat
+  #split into univariate and multivariate cases
+  #will return and rerun each multicase seperately
+  if(d==1){
+    #var Y is just a num if d=1
+    SST = var(Y)*(n-1)
+    SSE = sum((resid)^2)
+    SSM = SST - SSE # sum(Yhat-mean(Y))^2
+    
+    MST = SST/(n-1)
+    MSE = SSE/(n-p-1)
+    MSM = SSM/p
+    
+    Fstat = MSM/MSE
+    pval = pf(Fstat, p, n-p-1, lower.tail=F)
+    
+    #approximating homostodasicity variance sigma squared
+    sig2 = MSE
+    
+    H = X%*%solve(t(X)%*%X)%*%t(X)
+    lev = diag(H)
+    
+    #var(eps) = sig^2*(I-H)
+    #closer to x bar the smaller lev will be
+    #large large is worst case-- large lev will influence ur data the most
+    #this calculation will not extend to 2d because it is not considering matrices, just vectors
+    sresid = resid/(sqrt(sig2)*sqrt(1-lev))
+    
+    
+    #var(betahat) 1d case = sig^2 * inv(Xt X)
+    #vbhat = sig2*solve(t(X)%*%X)
+    #stnd error of betahat ONLY if d >1
+    sebhat = sqrt(sig2*solve(t(X)%*%X))
+    
+    #multi null what won't calculate
+    if(d>1){
+      sresid = NULL
+      Fstat = NULL
+      sebhat = NULL
+    }
+    
+    
+    #be able to pull certain features from the code
+    results = list('detx'=dx,
+                   'betahat'= betahat,
+                   'Fstat'= Fstat,
+                   'pval'= pval,
+                   'sresid'=sresid
+                   'sebhat'=sebhat
+                   )
+  }
+  
+  
+  
+  return(results)
+}
+
+M = mymvr(X,Y)
+M$betahat
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A =t(c(1,2))
+B =rbind(3,4,5,6)
+B
+kroncecker(A,B)
+
+
