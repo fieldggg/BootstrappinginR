@@ -1,0 +1,357 @@
+# Load necessary libraries
+library(MASS)
+library(matrixsampling)
+
+# Set the seed for reproducibility
+set.seed(12321)
+
+# Load the dataset
+data <- read.csv("Audience_Advertising_10_24.csv")
+
+# Filter Instagram users
+instagram_data <- data[data$Preferred.Platform == "Instagram",]
+
+# Extract Customer Lifetime Value
+clv_instagram <- instagram_data$Customer.Lifetime.Value..USD.
+
+# Bootstrap sampling
+bootstrap_samples <- 20000
+bootstrap_means <- replicate(bootstrap_samples, mean(sample(clv_instagram, replace = TRUE)))
+
+# Calculate 7% symmetric two-tailed confidence interval
+alpha <- 0.07
+lower_boundary <- quantile(bootstrap_means, probs = alpha / 2)
+upper_boundary <- quantile(bootstrap_means, probs = 1 - alpha / 2)
+
+# Display results
+cat("Lower Boundary =", round(lower_boundary, 2), "\n")
+cat("Upper Boundary =", round(upper_boundary, 2), "\n")
+
+
+
+# Load necessary libraries
+library(MASS)
+
+# Set the seed for reproducibility
+set.seed(12321)
+
+# Load your dataset
+data <- read.csv("Audience_Advertising_10_24.csv")
+
+# Simple linear regression: Number of Online Purchases ~ Number of Loyalty Program Points
+model <- lm(Number.of.Online.Purchases.in.Last.Month ~ Number.of.Loyalty.Program.Points, data = data)
+
+# Calculate residuals
+residuals <- resid(model)
+
+# Define function to calculate kurtosis
+kurtosis <- function(x) {
+  n <- length(x)
+  mean((x - mean(x))^4) / (var(x)^2)
+}
+
+# Bootstrap to calculate kurtosis for residuals
+bootstrap_samples <- 20000
+bootstrap_kurtosis <- replicate(bootstrap_samples, {
+  sample_residuals <- sample(residuals, replace = TRUE)
+  kurtosis(sample_residuals)
+})
+
+# 12% symmetric two-tailed confidence interval
+alpha <- 0.12
+lower_boundary <- quantile(bootstrap_kurtosis, probs = alpha / 2)
+upper_boundary <- quantile(bootstrap_kurtosis, probs = 1 - alpha / 2)
+
+# Display results
+cat("Lower Boundary =", round(lower_boundary, 2), "\n")
+cat("Upper Boundary =", round(upper_boundary, 2), "\n")
+
+
+# Load necessary libraries
+library(MASS)
+
+# Set the seed for reproducibility
+set.seed(12321)
+
+# Load the dataset
+data <- read.csv("Audience_Advertising_10_24.csv")
+
+
+
+
+# Load necessary libraries
+library(MASS)
+
+# Set the seed for reproducibility
+set.seed(12321)
+
+# Load the dataset
+data <- read.csv("path_to_your_file/Audience_Advertising_10_24.csv")
+
+# Fit multivariate regression model
+model <- lm(cbind(Number.of.Online.Purchases.in.Last.Month, 
+                  Average.Time.on.Social.Media.per.Day..min.) ~ 
+              Number.of.Loyalty.Program.Points + 
+              Number.of.Ad.Clicks.per.Week + 
+              Number.of.Ad.Impressions.per.Week, data = data)
+
+# Function to calculate Wilks' Lambda test statistic
+calculate_wilks <- function(fit_model) {
+  residuals_matrix <- resid(fit_model)
+  predicted_matrix <- fit_model$fitted.values
+  
+  # Compute residual sum of squares and total sum of squares
+  E <- t(residuals_matrix) %*% residuals_matrix
+  H <- t(predicted_matrix) %*% predicted_matrix
+  
+  # Compute Wilks' lambda
+  eigen_values <- eigen(solve(E + H) %*% E)$values
+  prod(eigen_values)
+}
+
+# Bootstrap to compute Wilks' statistic for 5,000 samples
+bootstrap_samples <- 5000
+bootstrap_wilks <- replicate(bootstrap_samples, {
+  sample_indices <- sample(1:nrow(data), replace = TRUE)
+  boot_model <- lm(cbind(Number.of.Online.Purchases.in.Last.Month, 
+                         Average.Time.on.Social.Media.per.Day..min.) ~ 
+                     Number.of.Loyalty.Program.Points + 
+                     Number.of.Ad.Clicks.per.Week + 
+                     Number.of.Ad.Impressions.per.Week, 
+                   data = data[sample_indices, ])
+  calculate_wilks(boot_model)
+})
+
+# 9% symmetric right-tailed confidence boundary
+alpha <- 0.09
+confidence_boundary <- quantile(bootstrap_wilks, probs = 1 - alpha)
+
+# Display the result
+cat("Confidence Boundary =", round(confidence_boundary, 4), "\n")
+
+
+
+# Load required library
+library(MASS)
+
+# Set the seed for reproducibility
+set.seed(12321)
+
+# Define parameters
+dimension <- 2
+sample_size <- 34
+
+# Generate a sample of size 34 from a 2-dimensional standard normal distribution
+sample_data <- mvrnorm(n = sample_size, mu = rep(0, dimension), Sigma = diag(dimension))
+
+# Calculate the Wishart matrix manually by computing the covariance matrix
+wishart_matrix <- t(sample_data) %*% sample_data
+
+# Round the entries to 2 decimal places
+rounded_wishart_matrix <- round(wishart_matrix, 2)
+
+# Display the matrix
+rounded_wishart_matrix
+
+
+
+
+
+
+
+
+
+
+# Load the required library
+library(MASS)
+
+# Set the seed for reproducibility
+set.seed(12321)
+
+# Define parameters
+dimension <- 3  # 3-dimensional sample
+sample_size <- 27  # sample size
+num_samples <- 15000  # number of covariance matrices
+
+# Function to generate Wishart matrices manually
+generate_wishart <- function(sample_size, dimension) {
+  # Generate a sample from multivariate normal distribution
+  sample_data <- mvrnorm(n = sample_size, mu = rep(0, dimension), Sigma = diag(dimension))
+  
+  # Calculate the Wishart matrix (sample covariance matrix)
+  t(sample_data) %*% sample_data
+}
+
+# Generate 15,000 Wishart matrices and calculate sqrt(det) for each
+wishart_sqrt_dets <- replicate(num_samples, {
+  wishart_matrix <- generate_wishart(sample_size, dimension)
+  sqrt(det(wishart_matrix))
+})
+
+# Calculate 6% symmetric two-tailed confidence interval
+alpha <- 0.06
+lower_boundary <- quantile(wishart_sqrt_dets, probs = alpha / 2)
+upper_boundary <- quantile(wishart_sqrt_dets, probs = 1 - alpha / 2)
+
+# Display the results
+cat("Lower Boundary =", round(lower_boundary, 4), "\n")
+cat("Upper Boundary =", round(upper_boundary, 4), "\n")
+
+
+# Load the required library
+library(MASS)
+
+# Set the seed for reproducibility
+set.seed(12321)
+
+# Define parameters
+dimension <- 3  # 3-dimensional sample
+sample_size <- 27  # original sample size
+num_samples <- 15000  # number of bootstrap samples
+
+# Generate an initial multivariate normal dataset
+original_data <- mvrnorm(n = sample_size, mu = rep(0, dimension), Sigma = diag(dimension))
+
+# Bootstrap process
+bootstrap_sqrt_dets <- replicate(num_samples, {
+  # Resample rows of the original dataset with replacement
+  resampled_data <- original_data[sample(1:sample_size, sample_size, replace = TRUE), ]
+  
+  # Calculate the covariance matrix for the resampled data
+  covariance_matrix <- cov(resampled_data)
+  
+  # Compute the square root of the determinant of the covariance matrix
+  sqrt(det(covariance_matrix))
+})
+
+# Calculate 6% symmetric two-tailed confidence interval
+alpha <- 0.06
+lower_boundary <- quantile(bootstrap_sqrt_dets, probs = alpha / 2)
+upper_boundary <- quantile(bootstrap_sqrt_dets, probs = 1 - alpha / 2)
+
+# Display the results
+cat("Lower Boundary =", round(lower_boundary, 4), "\n")
+cat("Upper Boundary =", round(upper_boundary, 4), "\n")
+
+# Load the necessary libraries
+library(MASS)
+
+# Set the seed for reproducibility
+set.seed(12321)
+
+# Define parameters
+p <- 3  # Number of predictors
+d <- 2  # Number of dependent variables
+n <- 500  # Sample size
+num_iterations <- 5000  # Number of Monte Carlo iterations
+
+# Monte Carlo Simulation
+hotelling_lowry_statistics <- replicate(num_iterations, {
+  # Generate X matrix (predictors) with multivariate normal distribution
+  X <- mvrnorm(n, mu = rep(0, p), Sigma = diag(p))
+  
+  # Generate true coefficients (Beta) matrix
+  Beta <- matrix(rnorm(p * d), nrow = p, ncol = d)
+  
+  # Generate residuals matrix (multivariate normal)
+  residuals <- mvrnorm(n, mu = rep(0, d), Sigma = diag(d))
+  
+  # Generate Y matrix (responses)
+  Y <- X %*% Beta + residuals
+  
+  # Calculate Σ_X (covariance of predictors)
+  Sigma_X <- cov(X)
+  
+  # Estimate Beta-hat
+  Beta_hat <- solve(t(X) %*% X) %*% t(X) %*% Y
+  
+  # Calculate residual covariance matrix Σ_Y|X
+  residuals_hat <- Y - X %*% Beta_hat
+  Sigma_Y_given_X <- t(residuals_hat) %*% residuals_hat / (n - p)
+  
+  # Hotelling-Lowry test statistic: det(Σ_Y) / det(Σ_Y|X)
+  det(cov(Y)) / det(Sigma_Y_given_X)
+})
+
+# Calculate the 8% symmetric two-tailed confidence interval
+alpha <- 0.08
+lower_critical_value <- quantile(hotelling_lowry_statistics, probs = alpha / 2)
+upper_critical_value <- quantile(hotelling_lowry_statistics, probs = 1 - alpha / 2)
+
+# Display the results
+cat("Lower Critical Value =", round(lower_critical_value, 2), "\n")
+cat("Upper Critical Value =", round(upper_critical_value, 2), "\n")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Load necessary library
+library(MASS)
+
+# Set the seed for reproducibility
+set.seed(12321)
+
+# Define parameters
+p <- 3  # Number of predictors
+d <- 2  # Number of responses
+n <- 500  # Sample size
+num_iterations <- 5000  # Number of Monte Carlo iterations
+
+# Extract columns from the dataset (replace with your data if using actual files)
+data <- read.csv("Audience_Advertising_10_24.csv")
+X <- as.matrix(data[, c("Number.of.Loyalty.Program.Points", 
+                        "Number.of.Ad.Clicks.per.Week", 
+                        "Number.of.Ad.Impressions.per.Week")])
+
+Y <- as.matrix(data[, c("Number.of.Online.Purchases.in.Last.Month", 
+                        "Average.Time.on.Social.Media.per.Day..min.")])
+
+# Monte Carlo Simulation for Hotelling-Lowry test statistics
+hotelling_lowry_statistics <- replicate(num_iterations, {
+  # Generate synthetic data
+  X_sample <- mvrnorm(n, mu = rep(0, p), Sigma = diag(p))
+  Beta <- matrix(rnorm(p * d), nrow = p, ncol = d)
+  residuals <- mvrnorm(n, mu = rep(0, d), Sigma = diag(d))
+  Y_sample <- X_sample %*% Beta + residuals
+  
+  # Covariance of X
+  Sigma_X <- cov(X_sample)
+  
+  # Estimate Beta_hat
+  Beta_hat <- solve(t(X_sample) %*% X_sample) %*% t(X_sample) %*% Y_sample
+  
+  # Covariance of residuals
+  residuals_hat <- Y_sample - X_sample %*% Beta_hat
+  Sigma_Y_given_X <- t(residuals_hat) %*% residuals_hat / (n - p)
+  
+  # Covariance of Y
+  Sigma_Y <- cov(Y_sample)
+  
+  # Hotelling-Lowry statistic: det(Sigma_Y) / det(Sigma_Y|X)
+  det(Sigma_Y) / det(Sigma_Y_given_X)
+})
+
+# Calculate 8% symmetric two-tailed confidence interval
+alpha <- 0.08
+lower_critical_value <- quantile(hotelling_lowry_statistics, probs = alpha / 2)
+upper_critical_value <- quantile(hotelling_lowry_statistics, probs = 1 - alpha / 2)
+
+# Display results
+cat("Lower Critical Value =", round(lower_critical_value, 2), "\n")
+cat("Upper Critical Value =", round(upper_critical_value, 2), "\n")
+
+
+
